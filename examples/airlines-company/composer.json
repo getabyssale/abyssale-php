@@ -1,0 +1,17 @@
+{
+    "name": "abyssale-examples/airlines-company",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {},
+    "authors": [
+        {
+            "name": "Abyssale dev team",
+            "email": "friends@abyssale.com"
+        }
+    ],
+    "require": {
+        "php-http/curl-client": "^2.2",
+        "guzzlehttp/psr7": "^2.4",
+        "abyssale/abyssale": "dev-master"
+    }
+}
