@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Abyssale\Client;
+use Abyssale\Exception\TextCannotFitException;
 use Abyssale\ResponseParser;
 use Abyssale\Result\GenerationRequestInterface;
 use Abyssale\Result\Image;
@@ -27,7 +28,7 @@ final class ClientTest extends TestCase
     {
         $this->httpClient = new \Http\Mock\Client();
         $this->parserMock = $this->createMock(ResponseParser::class);
-        $this->client = new Client('api_key', $this->httpClient, null, $this->parserMock);
+        $this->client = new Client('api_key', $this->httpClient, null, null, $this->parserMock);
     }
 
     public function testImageGenerationSuccess(): void
@@ -285,5 +286,38 @@ final class ClientTest extends TestCase
             'https://mywebhook.com/123',
             [],
         );
+    }
+
+    public function test429ResponseCode(): void
+    {
+        $this->httpClient->on(
+            new RequestMatcher(sprintf('/banner-builder/%s/generate', self::TEMPLATE_UUID)),
+            new Response(429, [], json_encode(['message' => 'error_429']))
+        );
+
+        $this->expectException(\Abyssale\Exception\NotEnoughCreditsException::class);
+        $this->expectExceptionMessage("You don't have enough credits to perform this action");
+        $this->client->generateImage(self::TEMPLATE_UUID, 'instagram-story', [], []);
+    }
+
+    public function test400ResponseCodeCannotFit(): void
+    {
+        $this->httpClient->on(
+            new RequestMatcher(sprintf('/banner-builder/%s/generate', self::TEMPLATE_UUID)),
+            new Response(400, [], json_encode([
+                'message' => "Element layer1 error: The text 'LOL' cannot fit within the defined space.",
+                'id' => 'cannot_build_banner',
+            ]))
+        );
+
+        $this->expectException(\Abyssale\Exception\TextCannotFitException::class);
+
+        try {
+            $this->client->generateImage(self::TEMPLATE_UUID, 'instagram-story', [], []);
+        } catch (\Abyssale\Exception\TextCannotFitException $e) {
+            self::assertEquals('layer1', $e->getLayer());
+            self::assertEquals('LOL', $e->getProvidedText());
+            throw $e;
+        }
     }
 }

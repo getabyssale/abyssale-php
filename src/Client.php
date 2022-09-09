@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Abyssale;
 
 use Abyssale\Exception\ClientException;
+use Abyssale\Exception\NotEnoughCreditsException;
 use Abyssale\Exception\RequestException;
 use Abyssale\Exception\ServerException;
+use Abyssale\Exception\TextCannotFitException;
 use Abyssale\Result\GenerationRequestInterface;
 use Abyssale\Result\Image;
 use Abyssale\Result\Pdf;
@@ -186,11 +188,33 @@ class Client implements ClientInterface
             $jsonContent = json_decode($response->getBody()->getContents(), true);
 
             return $parserCallback($this->responseParser, $jsonContent);
-        } catch (ClientErrorException $e) {
-            throw new ClientException($e->getMessage(), $e->getResponse()->getStatusCode(), $e);
-        } catch (ServerErrorException $e) {
-            throw new ServerException($e->getMessage(), $e->getResponse()->getStatusCode(), $e);
         } catch (\Throwable $e) {
+            if ($e instanceof \Http\Client\Exception\HttpException) {
+                $statusCode = $e->getResponse()->getStatusCode();
+                $responseContent = $e->getResponse()->getBody()->getContents();
+
+                $parsedExceptionMessage = json_decode($responseContent, true);
+                $exceptionMessage = JSON_ERROR_NONE === json_last_error() && !empty($parsedExceptionMessage["message"])
+                    ? $parsedExceptionMessage["message"]
+                    : $responseContent;
+
+                if ($e instanceof ClientErrorException) {
+                    if ($statusCode === 429) {
+                        throw new NotEnoughCreditsException();
+                    } elseif ($statusCode === 400) {
+                        if (!empty($parsedExceptionMessage["id"])
+                            && $parsedExceptionMessage["id"] === "cannot_build_banner"
+                            && TextCannotFitException::match($parsedExceptionMessage["message"])) {
+                            throw TextCannotFitException::fromMessage($parsedExceptionMessage["message"]);
+                        }
+                    }
+
+                    throw new ClientException($exceptionMessage, $statusCode);
+                } elseif ($e instanceof ServerErrorException) {
+                    throw new ServerException($exceptionMessage, $statusCode);
+                }
+            }
+
             throw new RequestException("Unknown error during Abyssale API call", 0, $e);
         }
     }

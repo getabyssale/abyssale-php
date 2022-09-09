@@ -12,8 +12,10 @@ $airlines = [
     'vancouver-calgary-65' => ['Vancouver - Calgary', 'As cheap as 65$'],
 ];
 
+$templateId = 'cb15eff9-15cb-4cf3-b48e-654dc7619f35'; // replace by your own templateId in Abyssale.com
+
 foreach ($airlines as $key => $line) {
-    $image = $client->generateImage('cb15eff9-15cb-4cf3-b48e-654dc7619f35', 'facebook-post', [
+    $image = $client->generateImage($templateId, 'facebook-post', [
         'from_to_text' => [
             'payload' => $line[0],
         ],
