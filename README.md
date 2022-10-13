@@ -1,15 +1,15 @@
 <p align="center">
-  <a href="https://www.abyssale.com?utm_source=github&utm_medium=logo&utm_campaign=php" target="_blank">
+  <a href="https://www.abyssale.com/image-video-generation-api?utm_source=github&utm_medium=logo&utm_campaign=php" target="_blank">
     <img src="https://uploads-ssl.webflow.com/6214efb2d4b5d94158f2ff03/6218f45ff39a58c8dbf7eb2c_abyssale-logo.svg" alt="Sentry" width="199" height="44">
   </a>
 </p>
 
 # Abyssale SDK for PHP
 
-Generate images at scale, based on templates created in [Abyssale]([https://abyssale.com).
+Generate images at scale, based on templates created in [Abyssale](https://www.abyssale.com/image-video-generation-api?utm_source=github&utm_medium=intro&utm_campaign=php).
 This PHP SDK handles the communication with Abyssale API.
 
-To have a better understanding of how Abyssale works from a developer point of view, you can check our [Abyssale developers portal](https://developers.abyssale.com/).
+To have a better understanding of how Abyssale works from a developer point of view, you can check our [Abyssale developers portal](https://developers.abyssale.com?utm_source=github&utm_medium=intro&utm_campaign=php).
 
 ## Installation
 
